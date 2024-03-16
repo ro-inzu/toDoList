@@ -5,26 +5,47 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
+	"reflect"
 )
 
-// Task represents a task with an ID, Description, and Completion status.
-type Task struct {
-	ID          int    `json:"id"`
-	Description string `json:"description"`
-	Completed   bool   `json:"completed"`
+// Response represents a JSON response with a message and status.
+type Response struct {
+	Status  string `json:"status"`
+	Message string `json:"message,omitempty"`
 }
 
-var (
-	// Initialize the tasks map with a test task.
-	tasks = map[int]Task{
-		1: {ID: 1, Description: "Test task", Completed: false},
+// Handler for each route
+func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request, allowedMethod string) bool {
+	if r.Method != allowedMethod {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return false
 	}
-	nextID = 2 // Start nextID at 2 since we already have a task with ID 1.
-	mu     sync.Mutex
-)
+	return true
+}
+
+func sendErrorResponse(w http.ResponseWriter, status int, errorMessage string) {
+	http.Error(w, errorMessage, status)
+}
+
+func sendJsonResponse(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		sendErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
+	}
+}
+
+func sendSuccessResponse(w http.ResponseWriter, status int, message string) {
+	response := Response{
+		Status:  "ok",
+		Message: message,
+	}
+	sendJsonResponse(w, status, response)
+}
 
 func main() {
+	loadTasksFromJSONFile("tasks.json")
+	fmt.Println(reflect.TypeOf(tasks))
 	http.HandleFunc("/get_all_tasks", getAllTasksHandler)
 	http.HandleFunc("/mark_task_complete", markTaskCompleteHandler)
 	http.HandleFunc("/update_task", updateTaskHandler)
@@ -54,6 +75,7 @@ func getAllTasksHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func markTaskCompleteHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -136,23 +158,30 @@ func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func addTaskHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	log.Println("addTaskHandler")
+	if !methodNotAllowedHandler(w, r, http.MethodPost) {
 		return
 	}
 
 	var req Task
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		sendErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	mu.Lock()
 	defer mu.Unlock()
 
+	log.Printf("JSON body: %v\n", req)
 	req.ID = nextID
 	tasks[nextID] = req
 	nextID++
 
-	w.WriteHeader(http.StatusCreated)
+	// Write tasks to JSON file
+	if err := writeTasksToJSONFile(tasks, "tasks.json"); err != nil {
+		sendErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	sendSuccessResponse(w, http.StatusCreated, "Task added successfully")
 }
