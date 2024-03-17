@@ -1,1 +1,1 @@
-{"1":{"id":1,"description":"Example task description","completed":false},"2":{"id":2,"description":"Example task description","completed":false},"3":{"id":3,"description":"Example task description","completed":false},"4":{"id":4,"description":"Example task description","completed":false},"5":{"id":5,"description":"Example task description","completed":false},"6":{"id":6,"description":"Example task description","completed":false}}
+{"1":{"id":1,"description":"create a Go web API app for my portfolio","completed":true}}

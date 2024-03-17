@@ -10,7 +10,7 @@ type Task struct {
 }
 
 var (
-	// Initialize the tasks map with a test task.
+	// Initialize the tasks map key type Int and values type Task
 	tasks  = map[int]Task{}
 	nextID = 2 // Start nextID at 2 since we already have a task with ID 1.
 	mu     sync.Mutex
