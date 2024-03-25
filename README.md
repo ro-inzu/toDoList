@@ -4,6 +4,7 @@
 Keep track of all your todo items
 
 ## Project structure
+```
 .
 ├── README.md
 ├── cli.go
@@ -11,6 +12,7 @@ Keep track of all your todo items
 ├── main.go
 ├── task.go
 └── tasks.jso
+```
 
 
 ## API Reference
