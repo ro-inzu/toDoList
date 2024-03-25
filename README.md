@@ -80,6 +80,35 @@ specify with port number default is 8080
   go run main.go task.go helper.go -port=8081
 ```
 
+```bash
+  go run cli.go
+
+Menu:
+1. View all tasks
+2. Update task
+3. Delete task
+4. Add task
+5. Exit
+Enter your choice: 4
+Enter task content: make go to do app
+Task added successfully.
+Menu:
+1. View all tasks
+2. Update task
+3. Delete task
+4. Add task
+5. Exit
+Enter your choice: 1
+Tasks:
+        ----------------------
+        Task ID: 1
+        Completed: false
+        Description: make go to do app
+        ----------------------
+
+```
+
+
 Follow API reference for the current resources and Methods allowed
 
 Test using CURL
